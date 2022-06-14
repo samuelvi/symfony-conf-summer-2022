@@ -1,0 +1,62 @@
+version: "3.7"
+
+services:
+
+  nginx:
+    build: nginx
+    container_name: sf_world_22_summer_nginx
+    volumes:
+      - ../:/var/www/html/:cached
+    ports:
+      - 9080:80
+
+  fpm:
+    build: php-fpm
+    container_name: sf_world_22_summer_fpm
+    volumes:
+      - ../:/var/www/html/:cached
+    environment:
+      - SYMFONY_IDE=phpstorm
+
+  postgresql:
+    image: postgres:14.1-alpine
+    container_name: sf_world_22_summer_postgresql
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=sf_world
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./postgresql/db:/var/lib/postgresql/data
+      # copy the sql script to create tables
+      # - ./postgresql/dump/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  mailer:
+    image: schickling/mailcatcher
+    container_name: sf_world_22_summer_mailcatcher
+    ports:
+      - '1025:1025'
+      - '1080:1080'
+
+  rabbitmq:
+    image: rabbitmq:3.10.5
+    container_name: sf_world_22_summer_rabbitmq
+    restart: unless-stopped
+    ports:
+      - 5630:5672
+      - 8090:15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbit
+      - RABBITMQ_DEFAULT_PASS=rabbit
+
+  redis:
+    image: redis:6.2-alpine
+    container_name: sf_world_22_summer_redis
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass redis
+    volumes:
+      - ./redis/data:/data
