@@ -1,1 +1,1 @@
-docker exec -it takeachef-mariadb-dev /bin/bash
+docker exec -it sf_world_22_summer_postgresql /bin/bash
