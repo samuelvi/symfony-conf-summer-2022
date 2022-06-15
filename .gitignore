@@ -1,3 +1,6 @@
+docker/postgresql/db
+public/uploads
+
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
@@ -17,4 +20,3 @@
 .phpunit.result.cache
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
-docker/postgresql/db
