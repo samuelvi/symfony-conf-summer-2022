@@ -55,6 +55,11 @@ RUN composer self-update
 COPY conf/opcache.ini /usr/local/etc/php/conf.d/
 COPY conf/custom.ini /usr/local/etc/php/conf.d/
 
+
+# make command
+RUN apt-get install make
+
+
 # USER PERMISSIONS
 RUN usermod -u 1000 www-data
 RUN usermod -a -G www-data root
@@ -78,6 +83,8 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 RUN apt-get update
 RUN apt-get install yarn
+
+
 
 #RUN apt-get update && apt-get install -y nodejs yarn
 

@@ -29,7 +29,7 @@ final class Version20220614132530 extends AbstractMigration
             EOSQL
         );
 
-        $this->add('create index expiry on sessions (sess_lifetime)');
+        $this->addSql('create index expiry on sessions (sess_lifetime)');
     }
 
     public function down(Schema $schema): void

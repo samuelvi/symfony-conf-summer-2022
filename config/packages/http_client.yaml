@@ -1,0 +1,6 @@
+#symfony console debug:autowiring | grep httpclient -i
+framework:
+  http_client:
+    scoped_clients:
+      akismet.client:
+        base_uri: 'https://%env(AKISMET_KEY)%.rest.akismet.com/'

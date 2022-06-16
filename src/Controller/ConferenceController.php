@@ -5,14 +5,14 @@ namespace App\Controller;
 use App\Entity\Comment;
 use App\Entity\Conference;
 use App\Form\CommentFormType;
+use App\Message\CommentMessage;
 use App\Repository\CommentRepository;
 use App\Repository\ConferenceRepository;
-use App\SpamChecker;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Twig\Environment;
 
@@ -20,9 +20,8 @@ class ConferenceController extends AbstractController
 {
     public function __construct(
         #[Autowire("%kernel.project_dir%/public/uploads/photos")]
-        private string                 $photoDir,
-        private SpamChecker            $spamChecker,
-        private EntityManagerInterface $em)
+        private string              $photoDir,
+        private MessageBusInterface $bus)
     {
     }
 
@@ -35,8 +34,18 @@ class ConferenceController extends AbstractController
 
         return $this->render('conference/index.html.twig',
 //            ['conferences' => $conferenceRepository->findAll()]
-        );
+        )->setSharedMaxAge(15);
     }
+
+
+    #[Route('/conference_header', name: 'conference_header')]
+    public function conferenceHeader(ConferenceRepository $conferenceRepository): Response
+    {
+        return $this->render('conference/header.html.twig', [
+            'conferences' => $conferenceRepository->findAll(),
+        ])->setSharedMaxAge(30);
+    }
+
 
 //    #[Route('/conference/{id}', name: 'conference')]
 //    public function show(Environment $twig, Conference $conference, CommentRepository $commentRepository): Response
@@ -65,20 +74,15 @@ class ConferenceController extends AbstractController
                 $comment->setPhotoFilename($filename);
             }
 
-            $this->em->persist($comment);
+            $commentRepository->add($comment, true);
 
-            $context = [
+            $this->bus->dispatch(new CommentMessage($comment->getId(), [
                 'user_ip' => $request->getClientIp(),
                 'user_agent' => $request->headers->get('user-agent'),
                 'referrer' => $request->headers->get('referer'),
                 'permalink' => $request->getUri(),
-            ];
-            if (2 === $this->spamChecker->getSpamScore($comment, $context)) {
-                throw new \RuntimeException('Blatant spam, go away!');
-            }
+            ]));
 
-            $this->em->flush();
-            // $commentRepository->add($comment, true);
 
             return $this->redirectToRoute('conference', ['slug' => $conference->getSlug()]);
         }

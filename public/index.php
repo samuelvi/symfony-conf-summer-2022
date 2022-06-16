@@ -2,6 +2,9 @@
 
 use App\Kernel;
 
+// Forzar cambio de esta vble aquí, para ver los datafixtures de test
+// $_SERVER['APP_ENV']='test';
+
 require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
 
 return function (array $context) {
